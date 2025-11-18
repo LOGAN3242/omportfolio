@@ -155,7 +155,7 @@ const Hero: React.FC = () => {
                         View My Work
                     </a>
                      <a 
-                        href="public/OmResume.pdf"
+                        href="/OmResume.pdf"
                         download
                         className="inline-flex items-center px-8 py-4 bg-transparent border-2 border-cyan-500 text-cyan-500 font-semibold rounded-lg shadow-lg hover:bg-cyan-500 hover:text-white transform hover:scale-105 transition-all duration-300"
                     >
