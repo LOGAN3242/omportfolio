@@ -10,7 +10,7 @@ const About: React.FC = () => {
                 
                 <div className="flex justify-center mb-8">
                     <img 
-                        src="/3323.png" 
+                        src="public/3323.png" 
                         alt="Om Sarvaiya" 
                         className="rounded-full w-64 h-64 object-cover border-4 border-cyan-500 shadow-2xl shadow-cyan-500/30 animate-float"
                     />
