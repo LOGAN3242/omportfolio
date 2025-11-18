@@ -5,7 +5,6 @@ import About from './components/About';
 import Skills from './components/Skills';
 import Experience from './components/Experience';
 import Projects from './components/Projects';
-import LiveCoding from './components/LiveCoding';
 import FutureGoals from './components/FutureGoals';
 import Education from './components/Education';
 import Certificates from './components/Certificates';
@@ -14,8 +13,8 @@ import Chatbot from './components/Chatbot';
 import './index.css';
 
 const Header: React.FC = () => {
-  const navLinks = ['About', 'Skills', 'Experience', 'Projects', 'Demo', 'Education', 'Certificates', 'Goals', 'Contact'];
-  const hrefs = ['#about', '#skills', '#experience', '#projects', '#live-coding', '#education', '#certificates', '#future-goals', '#contact'];
+  const navLinks = ['About', 'Skills', 'Experience', 'Projects', 'Education', 'Certificates', 'Goals', 'Contact'];
+  const hrefs = ['#about', '#skills', '#experience', '#projects', '#education', '#certificates', '#future-goals', '#contact'];
 
   return (
     <header className="fixed top-0 left-0 right-0 z-40 glassmorphism">
@@ -62,7 +61,6 @@ const App: React.FC = () => {
         <section id="skills" className="fade-in-section"><Skills /></section>
         <section id="experience" className="fade-in-section"><Experience /></section>
         <section id="projects" className="fade-in-section"><Projects /></section>
-        <section id="live-coding" className="fade-in-section"><LiveCoding /></section>
         <section id="education" className="fade-in-section"><Education /></section>
         <section id="certificates" className="fade-in-section"><Certificates /></section>
         <section id="future-goals" className="fade-in-section"><FutureGoals /></section>
