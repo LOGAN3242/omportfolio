@@ -1,61 +1,55 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { GoogleGenAI, Chat } from '@google/genai';
-import { PORTFOLIO_CONTEXT } from '../constants';
+import React, { useEffect, useRef, useState } from 'react';
+import { CHAT_SUGGESTIONS, EMAIL } from '../constants';
 import { ChatMessage } from '../types';
+import { CloseIcon, SendIcon } from './Icons';
+
+// The Gemini key lives only in the Netlify Function (netlify/functions/chat.ts).
+const CHAT_ENDPOINT = '/.netlify/functions/chat';
+const GREETING: ChatMessage = { role: 'model', text: "Hi! I'm Om's AI assistant. Ask me about his projects, skills or experience." };
+
+const Orb: React.FC<{ size?: string }> = ({ size = 'w-11 h-11' }) => (
+  <span className={`relative ${size} shrink-0`} aria-hidden="true">
+    <span className="spin-4 absolute inset-0 rounded-full bg-[conic-gradient(#8b5cf6,#06b6d4,#a78bfa,#22d3ee,#8b5cf6)]" />
+    <span className="absolute inset-[18%] rounded-full bg-[#0d1117]" />
+    <span className="think absolute inset-[34%] rounded-full bg-cyan-400 shadow-[0_0_12px_#22d3ee]" />
+  </span>
+);
 
 const Chatbot: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>([GREETING]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [chat, setChat] = useState<Chat | null>(null);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const endRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (isOpen && !chat) {
-      try {
-        const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
-        const newChat = ai.chats.create({
-          model: 'gemini-2.5-flash',
-          config: {
-            systemInstruction: PORTFOLIO_CONTEXT,
-          },
-        });
-        setChat(newChat);
-         setMessages([{ role: 'model', text: "Hello! I'm Om's AI assistant. How can I help you today?" }]);
-      } catch (error) {
-        console.error("Failed to initialize Gemini:", error);
-        setMessages([{ role: 'model', text: "Sorry, I'm having trouble connecting right now." }]);
-      }
-    }
-  }, [isOpen, chat]);
+    endRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, isLoading]);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  const send = async (text: string) => {
+    const question = text.trim().slice(0, 500);
+    if (!question || isLoading) return;
 
-  useEffect(scrollToBottom, [messages]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim() || isLoading || !chat) return;
-
-    const userMessage: ChatMessage = { role: 'user', text: input };
-    setMessages(prev => [...prev, userMessage]);
+    const history = [...messages, { role: 'user', text: question } as ChatMessage];
+    setMessages(history);
     setInput('');
     setIsLoading(true);
 
     try {
-      const response = await chat.sendMessage({ message: input });
-      const modelMessage: ChatMessage = { role: 'model', text: response.text };
-      setMessages(prev => [...prev, modelMessage]);
-    } catch (error) {
-      console.error('Error sending message:', error);
-      const errorMessage: ChatMessage = {
-        role: 'model',
-        text: 'Oops! Something went wrong. Please try again.',
-      };
-      setMessages(prev => [...prev, errorMessage]);
+      const res = await fetch(CHAT_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: history.slice(1).slice(-10) }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data: { reply?: string } = await res.json();
+      setMessages(prev => [...prev, { role: 'model', text: data.reply || 'Sorry, I could not answer that.' }]);
+    } catch (err) {
+      console.error('Chat error:', err);
+      setMessages(prev => [
+        ...prev,
+        { role: 'model', text: `I'm having trouble connecting right now. You can reach Om directly at ${EMAIL}.` },
+      ]);
     } finally {
       setIsLoading(false);
     }
@@ -64,66 +58,99 @@ const Chatbot: React.FC = () => {
   return (
     <>
       <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-6 right-6 bg-gradient-to-r from-purple-600 to-cyan-500 text-white w-16 h-16 rounded-full shadow-lg flex items-center justify-center text-3xl z-50 transform hover:scale-110 transition-transform"
-        aria-label="Toggle chatbot"
+        type="button"
+        onClick={() => setIsOpen(o => !o)}
+        aria-label={isOpen ? 'Close AI assistant' : 'Open AI assistant'}
+        aria-expanded={isOpen}
+        className="fixed bottom-5 right-5 z-50 glassmorphism glow-pulse flex items-center gap-3 pl-2 pr-4 py-2 rounded-full text-sm font-semibold text-white"
       >
-        {isOpen ? '✕' : '💬'}
+        {isOpen ? (
+          <span className="w-11 h-11 flex items-center justify-center"><CloseIcon /></span>
+        ) : (
+          <Orb />
+        )}
+        <span className="hidden sm:inline">{isOpen ? 'Close' : "Ask Om's AI"}</span>
       </button>
+
       {isOpen && (
-        <div className="fixed bottom-24 right-6 w-full max-w-sm h-[60vh] bg-gray-900/80 backdrop-blur-md rounded-2xl shadow-2xl z-50 flex flex-col overflow-hidden border border-gray-700">
-          <header className="p-4 bg-gray-800/50 border-b border-gray-700">
-            <h3 className="text-lg font-semibold text-white text-center">AI Assistant</h3>
+        <div
+          role="dialog"
+          aria-label="Om's AI assistant"
+          className="fixed bottom-24 right-3 sm:right-5 z-50 w-[calc(100vw-24px)] max-w-[400px] h-[min(560px,70vh)] rounded-[22px] border border-white/10 bg-[#0d1117]/95 backdrop-blur-md shadow-2xl flex flex-col overflow-hidden"
+        >
+          <header className="flex items-center gap-3.5 px-5 py-4 border-b border-white/[0.08]">
+            <Orb size="w-10 h-10" />
+            <span className="flex flex-col leading-snug">
+              <span className="font-bold">Ask Om's AI</span>
+              <span className="text-[13px] text-gray-400">Answers from his résumé and projects</span>
+            </span>
           </header>
-          <div className="flex-1 p-4 overflow-y-auto">
-            <div className="flex flex-col space-y-4">
-              {messages.map((msg, index) => (
-                <div key={index} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div
-                    className={`max-w-[80%] p-3 rounded-2xl ${
-                      msg.role === 'user'
-                        ? 'bg-cyan-600 text-white rounded-br-none'
-                        : 'bg-gray-700 text-gray-200 rounded-bl-none'
+
+          <div className="flex-1 overflow-y-auto px-5 py-4 flex flex-col gap-3 text-[15px]" aria-live="polite">
+            {messages.map((m, i) => (
+              <div
+                key={i}
+                className={`max-w-[85%] px-4 py-2.5 whitespace-pre-wrap ${
+                  m.role === 'user'
+                    ? 'self-end bg-cyan-600 text-white rounded-[16px_16px_4px_16px]'
+                    : 'self-start bg-gray-800 text-gray-200 rounded-[16px_16px_16px_4px]'
+                }`}
+              >
+                {m.text}
+              </div>
+            ))}
+            {isLoading && (
+              <div className="self-start flex gap-1.5 px-4 py-3 rounded-2xl bg-gray-800" aria-label="Thinking">
+                {[0, 0.2, 0.4].map(d => (
+                  <span key={d} className="think w-[7px] h-[7px] rounded-full bg-cyan-400" style={{ animationDelay: `${d}s` }} />
+                ))}
+              </div>
+            )}
+            {messages.length === 1 && !isLoading && (
+              <div className="flex flex-wrap gap-2 mt-1">
+                {CHAT_SUGGESTIONS.map((s, i) => (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => send(s)}
+                    className={`px-3.5 py-2 rounded-full border text-[13px] ${
+                      i % 2 ? 'border-violet-500/45 bg-violet-500/10 text-violet-300' : 'border-cyan-500/45 bg-cyan-500/10 text-cyan-300'
                     }`}
                   >
-                    <p className="text-sm">{msg.text}</p>
-                  </div>
-                </div>
-              ))}
-              {isLoading && (
-                 <div className="flex justify-start">
-                    <div className="max-w-[80%] p-3 rounded-2xl bg-gray-700 text-gray-200 rounded-bl-none">
-                        <div className="flex items-center space-x-2">
-                            <div className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse"></div>
-                            <div className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse [animation-delay:0.2s]"></div>
-                            <div className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse [animation-delay:0.4s]"></div>
-                        </div>
-                    </div>
-                </div>
-              )}
-              <div ref={messagesEndRef} />
-            </div>
+                    {s}
+                  </button>
+                ))}
+              </div>
+            )}
+            <div ref={endRef} />
           </div>
-          <form onSubmit={handleSubmit} className="p-4 bg-gray-800/50 border-t border-gray-700">
-            <div className="flex items-center bg-gray-700 rounded-full">
-              <input
-                type="text"
-                value={input}
-                onChange={e => setInput(e.target.value)}
-                placeholder="Ask about my projects..."
-                className="w-full bg-transparent px-4 py-2 text-gray-200 focus:outline-none"
-                disabled={isLoading}
-              />
-              <button
-                type="submit"
-                className="bg-cyan-500 text-white p-2 rounded-full m-1 hover:bg-cyan-600 disabled:bg-gray-500"
-                disabled={isLoading || !input.trim()}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
-                  <path d="M3.478 2.405a.75.75 0 00-.926.94l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.405z" />
-                </svg>
-              </button>
-            </div>
+
+          <form
+            onSubmit={e => {
+              e.preventDefault();
+              send(input);
+            }}
+            className="flex gap-2.5 px-5 py-4 border-t border-white/[0.08]"
+          >
+            <label htmlFor="chat-input" className="sr-only">Ask a question</label>
+            <input
+              id="chat-input"
+              type="text"
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              placeholder="Ask about my projects…"
+              maxLength={500}
+              disabled={isLoading}
+              className="flex-1 min-w-0 px-4 py-3 rounded-xl border border-white/[0.12] bg-gray-900 text-gray-100 text-[15px] focus:outline-none focus:border-cyan-500"
+            />
+            <button
+              type="submit"
+              aria-label="Send"
+              disabled={isLoading || !input.trim()}
+              className="w-12 h-12 shrink-0 rounded-xl bg-gradient-to-br from-violet-500 to-cyan-500 text-white flex items-center justify-center disabled:opacity-40"
+            >
+              <SendIcon />
+            </button>
           </form>
         </div>
       )}

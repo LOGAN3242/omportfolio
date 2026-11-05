@@ -1,52 +1,30 @@
-
 import React from 'react';
 import { SKILL_CATEGORIES } from '../constants';
-import { type SkillCategory } from '../types';
+import SectionHeading from './SectionHeading';
 
-const glowColors: { [key: string]: string } = {
-  purple: 'hover:shadow-purple-500/50',
-  blue: 'hover:shadow-blue-500/50',
-  cyan: 'hover:shadow-cyan-500/50',
-  green: 'hover:shadow-green-500/50',
-  orange: 'hover:shadow-orange-500/50',
+const accent = {
+  purple: { border: '!border-violet-500/45', title: 'text-violet-300' },
+  cyan: { border: '!border-cyan-500/45', title: 'text-cyan-300' },
+  green: { border: '!border-green-400/40', title: 'text-green-300' },
+  orange: { border: '!border-orange-400/40', title: 'text-orange-300' },
 };
 
-const borderColors: { [key: string]: string } = {
-  purple: 'border-purple-500',
-  blue: 'border-blue-500',
-  cyan: 'border-cyan-500',
-  green: 'border-green-500',
-  orange: 'border-orange-500',
-};
-
-const SkillCategoryCard: React.FC<{ category: SkillCategory }> = ({ category }) => {
-    return (
-        <div className={`glassmorphism p-6 rounded-lg border-2 ${borderColors[category.color]} transition-shadow duration-300 shadow-lg ${glowColors[category.color]}`}>
-            <h3 className={`text-2xl font-bold mb-4 ${'text-' + category.color + '-400'}`}>{category.name}</h3>
-            <div className="flex flex-wrap gap-2">
-                {category.skills.map(skill => (
-                    <span key={skill.name} className="bg-gray-800 text-gray-300 text-sm font-medium px-4 py-2 rounded-full">
-                        {skill.name}
-                    </span>
-                ))}
-            </div>
+const Skills: React.FC = () => (
+  <section id="skills" className="max-w-[1240px] mx-auto px-5 md:px-8 py-20 md:py-24 flex flex-col gap-11">
+    <SectionHeading eyebrow="SKILLS" title="The agent toolkit" tone="violet" />
+    <div className="reveal grid gap-[18px] grid-cols-[repeat(auto-fit,minmax(min(100%,280px),1fr))]">
+      {SKILL_CATEGORIES.map(cat => (
+        <div key={cat.name} className={`glassmorphism rounded-[20px] p-6 flex flex-col gap-4 transition-transform hover:-translate-y-1 ${accent[cat.accent].border}`}>
+          <h3 className={`m-0 text-[19px] font-bold ${accent[cat.accent].title}`}>{cat.name}</h3>
+          <div className="flex flex-wrap gap-2 text-sm">
+            {cat.skills.map(s => (
+              <span key={s} className="px-3 py-1.5 rounded-full bg-gray-800 text-gray-200">{s}</span>
+            ))}
+          </div>
         </div>
-    );
-};
-
-const Skills: React.FC = () => {
-    return (
-        <section id="skills" className="py-20 bg-[#0a0a0a]">
-            <div className="container mx-auto px-6">
-                <h2 className="text-4xl font-bold text-center mb-12 gradient-text">Skills & Technologies</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {SKILL_CATEGORIES.map(category => (
-                        <SkillCategoryCard key={category.name} category={category} />
-                    ))}
-                </div>
-            </div>
-        </section>
-    );
-};
+      ))}
+    </div>
+  </section>
+);
 
 export default Skills;

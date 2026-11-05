@@ -1,12 +1,7 @@
-export interface Skill {
-  name: string;
-  level?: number;
-}
-
 export interface SkillCategory {
   name: string;
-  skills: Skill[];
-  color: string;
+  skills: string[];
+  accent: 'purple' | 'cyan' | 'green' | 'orange';
 }
 
 export interface Experience {
@@ -16,34 +11,30 @@ export interface Experience {
   location: string;
   description: string[];
   technologies: string[];
+  current?: boolean;
 }
+
+export type ProjectIcon = 'search' | 'network' | 'scan' | 'check' | 'file' | 'receipt' | 'mail';
 
 export interface Project {
   title: string;
-  subtitle: string;
-  description: string[];
+  summary: string;
+  points?: string[];
   technologies: string[];
-  category: ('AI/ML' | 'Backend' | 'Automation')[];
-  gradient: string;
+  icon: ProjectIcon;
+  accent: 'purple' | 'cyan';
+  /** Shown on in-progress projects, e.g. "In progress" */
+  status?: string;
+  github?: string;
+  /** Short note such as "Company project · code private" */
+  note?: string;
 }
 
 export interface Education {
   degree: string;
   university: string;
+  period: string;
   cgpa: string;
-  description: string;
-}
-
-export interface FutureGoal {
-  title: string;
-  description: string;
-  icon: string; // Using SVG path data
-}
-
-export interface Certificate {
-  name: string;
-  organization: string;
-  url: string;
 }
 
 export interface ChatMessage {

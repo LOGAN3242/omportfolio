@@ -1,37 +1,26 @@
 import React from 'react';
 import { EDUCATION } from '../constants';
 
-const EducationIcon = () => (
-    <div className="absolute -left-5 top-1 z-10">
-        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-800 ring-8 ring-[#0a0a0a]">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-cyan-400">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0l-.07.002-.018.005-.003.001-.001.001L4.26 10.147l.004-.001.002-.001.018-.005.07-.002zM12 9a3 3 0 100-6 3 3 0 000 6z" />
+const Education: React.FC = () => (
+  <section id="education" className="max-w-[1240px] mx-auto px-5 md:px-8 pb-20 flex flex-col gap-6">
+    <h2 className="m-0 font-mono-ui text-[13px] tracking-[0.14em] text-cyan-400 font-normal text-center">EDUCATION</h2>
+    <div className="reveal grid gap-5 grid-cols-[repeat(auto-fit,minmax(min(100%,380px),1fr))]">
+      {EDUCATION.map(edu => (
+        <div key={edu.degree} className="glassmorphism rounded-[20px] p-6 flex items-center gap-5">
+          <span className="w-12 h-12 shrink-0 rounded-xl bg-violet-500/15 text-violet-300 flex items-center justify-center" aria-hidden="true">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+              <path d="M2 9l10-5 10 5-10 5z" /><path d="M6 11v5c3 2 9 2 12 0v-5" />
             </svg>
+          </span>
+          <div className="flex flex-col gap-0.5 min-w-0">
+            <h3 className="m-0 text-lg font-bold">{edu.degree}</h3>
+            <span className="text-gray-300">{edu.university}</span>
+            <span className="font-mono-ui text-[13px] text-gray-500">{edu.period} · CGPA {edu.cgpa}</span>
+          </div>
         </div>
+      ))}
     </div>
+  </section>
 );
-
-const Education: React.FC = () => {
-    return (
-        <section id="education" className="py-20 bg-[#0a0a0a]">
-            <div className="container mx-auto px-6">
-                <h2 className="text-4xl font-bold text-center mb-16 gradient-text">Education</h2>
-                <div className="relative max-w-2xl mx-auto border-l-2 border-gray-700 pl-10">
-                    {EDUCATION.map((edu, index) => (
-                        <div key={edu.degree} className="mb-12 relative">
-                            <EducationIcon />
-                            <div className="glassmorphism p-6 rounded-lg shadow-lg hover:shadow-cyan-500/20 transition-shadow duration-300">
-                                <h3 className="text-xl font-bold text-cyan-400">{edu.degree}</h3>
-                                <p className="text-gray-300 mt-1 font-semibold">{edu.university}</p>
-                                <p className="text-sm text-gray-500 mb-3">{edu.cgpa}</p>
-                                <p className="text-gray-400">{edu.description}</p>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </div>
-        </section>
-    );
-};
 
 export default Education;
